@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <!-- This file has been downloaded from Bootsnipp.com. Enjoy! -->
+    <title>Chat</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="bootstrap.css" rel="stylesheet">
+    <style type="text/css">
+        .mytext{
+    border:0;padding:10px;background:whitesmoke;
+}
+.text{
+    width:75%;display:flex;flex-direction:column;
+}
+.text > p:first-of-type{
+    width:100%;margin-top:0;margin-bottom:auto;line-height: 13px;font-size: 12px;
+}
+.text > p:last-of-type{
+    width:100%;text-align:right;color:silver;margin-bottom:-7px;margin-top:auto;
+}
+.text-l{
+    float:left;padding-right:10px;
+}        
+.text-r{
+    float:right;padding-left:10px;
+}
+.avatar{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    width:25%;
+    float:left;
+    padding-right:10px;
+}
+.macro{
+    margin-top:5px;width:85%;border-radius:5px;padding:5px;display:flex;
+}
+.msj-rta{
+    float:right;background:whitesmoke;
+}
+.msj{
+    float:left;background:white;
+}
+.frame{
+    background:#e0e0de;
+    height:450px;
+    position: absolute;
+    bottom: 1em;
+    right: 1em;
+    overflow:auto;
+    padding:0;
+}
+.frame > div:last-of-type{
+    position:absolute;bottom:5px;width:100%;display:flex;
+}
+ul {
+    width:100%;
+    list-style-type: none;
+    padding:18px;
+    position:absolute;
+    bottom:32px;
+    display:flex;
+    flex-direction: column;
+
+}
+.msj:before{
+    width: 0;
+    height: 0;
+    content:"";
+    top:-5px;
+    left:-14px;
+    position:relative;
+    border-style: solid;
+    border-width: 0 13px 13px 0;
+    border-color: transparent #ffffff transparent transparent;            
+}
+.msj-rta:after{
+    width: 0;
+    height: 0;
+    content:"";
+    top:-5px;
+    left:14px;
+    position:relative;
+    border-style: solid;
+    border-width: 13px 13px 0 0;
+    border-color: whitesmoke transparent transparent transparent;           
+}  
+input:focus{
+    outline: none;
+}        
+::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+    color: #d4d4d4;
+}
+::-moz-placeholder { /* Firefox 19+ */
+    color: #d4d4d4;
+}
+:-ms-input-placeholder { /* IE 10+ */
+    color: #d4d4d4;
+}
+:-moz-placeholder { /* Firefox 18- */
+    color: #d4d4d4; 
+}   
+    </style>
+    <script src="jquery.js"></script>
+    <script src="bootstrap.js"></script>
+</head>
+<body>
+<!DOCTYPE html>
+<html>
+    <body>
+        <p>CHAT</p>
+        <div class="col-sm-3 col-sm-offset-4 frame">
+            <ul></ul>
+            <div>
+                <div class="msj-rta macro" style="margin:auto;overflow">                        
+                    <div class="text text-r" style="background:whitesmoke !important">
+                        <input class="mytext" placeholder="Type a message"/>
+                    </div> 
+                </div>
+            </div>
+        </div>        
+    </body>
+</html>
+
+<script type="text/javascript">
+var client = {};
+client.name = '';
+client.category = '';
+client.email = '';
+client.message = '';
+
+var admin = {};
+admin.avatar = "admin.jpg";
+
+var bot = {};
+bot.avatar = "android.gif";
+bot.introduction = function() {
+    var text = '<p><b>Hi, Silahkan Pilih Kategori</b></p><br><br>' +
+               '<p><button class="btn btn-info" onclick="reservationCategory()">1. Reservasi</button></p>' +
+               '<p><button class="btn btn-info" onclick="reservationCategory()">2. Bantuan</button></p>';
+    insertChat("bot",text);
+}
+bot.askIdentity = function() {
+    var form =  '<p><b>Hi, Silahkan Isi</b></p><br><br>' +
+                '<p><input type="text" class="form-control" id="formName" placeholder="name"/></p>' +
+                '<p><input type="email" class="form-control" id="formEmail" placeholder="email"/></p>' +
+                '<p><button class="form-control btn btn-info" onclick="bot.setIdentity()">Ok</button></p>';
+
+    insertChat('bot',form);
+}
+bot.isErrorStatusSend = false;
+bot.setIdentity = function() {
+    client.name = document.querySelector("#formName").value;
+    client.email = document.querySelector("#formEmail").value;
+
+    resetChat();
+    MySocket();
+}
+bot.sendErrorStatus = function() {
+    if (this.isErrorStatusSend == false) {
+        insertChat("bot", "Oppss !, You are not Connected... Try To Reconnect in 5 second");
+        this.isErrorStatusSend = true;
+    }
+}
+
+function formatAMPM(date) {
+    var hours = date.getHours();
+    var minutes = date.getMinutes();
+    var ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    minutes = minutes < 10 ? '0'+minutes : minutes;
+    var strTime = hours + ':' + minutes + ' ' + ampm;
+    return strTime;
+}            
+
+function insertChat(who, text){
+    var control = "";
+    var date = formatAMPM(new Date());
+    
+    if (who == "client"){
+        
+        control = '<li style="width:100%">' +
+                        '<div class="msj macro">' +
+                        '<div class="avatar"><img class="img-circle" style="width:100%;" src="client.jpg" /></div>' +
+                            '<div class="text text-l">' +
+                                '<p>'+ text +'</p>' +
+                                '<p><small>'+date+'</small></p>' +
+                            '</div>' +
+                        '</div>' +
+                    '</li>';                    
+    }else if(who == 'admin'){
+        control = '<li style="width:100%;">' +
+                        '<div class="msj-rta macro">' +
+                            '<div class="text text-r">' +
+                                '<p>'+text+'</p>' +
+                                '<p><small>'+date+'</small></p>' +
+                            '</div>' +
+                        '<div class="avatar" style="padding:0px 0px 0px 10px !important"><img class="img-circle" style="width:100%;" src="'+admin.avatar+'" /></div>' +                                
+                  '</li>';
+    }else{
+        control = '<li style="width:100%;">' +
+                        '<div class="msj-rta macro">' +
+                            '<div class="text text-r">' +
+                                '<p>'+text+'</p>' +
+                                '<p><small>'+date+'</small></p>' +
+                            '</div>' +
+                        '<div class="avatar" style="padding:0px 0px 0px 10px !important"><img class="img-circle" style="width:100%;" src="'+bot.avatar+'" /></div>' +                                
+                  '</li>';
+    }
+
+    $("ul").append(control);    
+}
+
+function resetChat(){
+    $("ul").empty();
+}
+
+
+
+function reservationCategory(){
+    client.category = 'reservation';
+    resetChat();
+    bot.askIdentity();
+}
+function helpCategory(){
+    client.category = 'help';
+    resetChat();
+    bot.askIdentity();
+}
+
+
+$(".mytext").on("keyup", function(e){
+    if (e.which == 13){
+        var text = $(this).val();
+        if (text !== ""){
+            insertChat("client", text);
+
+            client.message = text;
+            websocket.send(JSON.stringify(client));
+            $(this).val('');
+        }
+    }
+});
+
+
+
+function MySocket() {
+    //var wsUri = "ws://echo.websocket.org/";
+     var wsUri = "ws://localhost:9090";
+
+    websocket = new WebSocket(wsUri);
+
+    websocket.onopen = function(message) {
+        bot.isErrorStatusSend = false;
+        var text = '(connected) hai <b>' + client.name + '</b>, silahkan bertanya';
+        insertChat('bot',text);
+    };
+
+    websocket.onmessage = function(message) {
+        insertChat("admin",message.data);
+    };
+
+    websocket.onclose = function(message) {
+        bot.sendErrorStatus();
+        if (websocket.readyState == 3) {
+            setTimeout(MySocket(), 5000);
+        }
+    };
+}
+
+
+
+//-- Clear Chat
+resetChat();
+
+//start chat
+bot.introduction();
+//MySocket();
+
+//-- Print Messages
+// insertChat("client", "Hello Tom...");  
+</script>
+</body>
+</html>
